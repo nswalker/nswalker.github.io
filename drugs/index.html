@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Drug and Alcohol Dependence</title>
+    <style type="text/css">
+        #graphic{
+            display:block;
+            margin: 50px auto;
+            
+        }
+        
+        text {
+            
+            fill:grey;
+            
+        }
+    </style>
+</head>
+<body>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script type="text/javascript">
+    
+    var diameter = 500, //max size of the bubbles
+    format   = d3.format(",d"),
+//    color    = d3.scaleOrdinal(d3.schemeCategory20c); //color category
+        
+        color = d3.scaleOrdinal()
+            .range(["#35587F","#B6D8FF","#69B0FF","#5B6C7F","#548DCC"])
+            .domain([17.876,4.476,1.921, 1.003, 0.521, 0.397]);
+
+var bubble = d3.pack()
+    .size([diameter, diameter])
+    .padding(1.5);
+
+var svg = d3.select("body")
+    .append("svg")
+    .attr("width", diameter)
+    .attr("height", diameter)
+    .attr("class", "bubble");
+
+d3.csv("drugs.csv", function(error, data){
+    if (error) throw error;
+
+    //convert numerical values from strings to numbers
+    data = data.map(function(d){ d.value = +d["Number"]; return d; });
+
+    //Sets up a hierarchy of data object
+    var root = d3.hierarchy({children:data})
+      .sum(function(d) { return d.value; })
+      .sort(function(a, b) { return b.value - a.value; });
+
+    //Once we have hierarchal data, run bubble generator
+    bubble(root);
+
+    //setup the chart
+    var bubbles = svg.selectAll(".bubble")
+        .data(root.children)
+        .enter();
+
+    //create the bubbles
+    bubbles.append("circle")
+        .attr("class", "circle")
+        .attr("r", function(d){ return d.r; })
+        .attr("cx", function(d){ return d.x; })
+        .attr("cy", function(d){ return d.y; })
+        .style("fill", function(d) { return color(d.value); });
+
+    //format the text for each bubble
+    bubbles.append("text")
+        .attr("x", function(d){ return d.x; })
+        .attr("y", function(d){ return d.y + 5; })
+        .attr("text-anchor", "middle")
+        .text(function(d){ return d.data["Drugs"]; })
+        .style("fill","white")
+        .style("font-family", "Helvetica Neue, Helvetica, Avenir, san-serif")
+        .style("font-size", "7px");
+});
+    
+    </script>
+    <div align="left" style="PADDING-LEFT: 50px">
+       
+ <em> Data source: National Institute of Health, 2013</em>
+</div>
+
+    </body>
+</html>
